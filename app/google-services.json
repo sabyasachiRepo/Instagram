@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "759384098193",
+    "firebase_url": "https://sabya-instagram.firebaseio.com",
+    "project_id": "sabya-instagram",
+    "storage_bucket": "sabya-instagram.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:759384098193:android:5dc9df6830a37d7540c630",
+        "android_client_info": {
+          "package_name": "com.sabya.instagram"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "759384098193-1hfdm3hc1jdttj5g68b169jn6p46b6aq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.sabya.instagram",
+            "certificate_hash": "3e7916a0955c740c5bd9e66ecf8d1686ccab1d4c"
+          }
+        },
+        {
+          "client_id": "759384098193-tdrl536j3nmjh368jlu10u7udd5g0pki.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBf9edGxU0CU-2XK_9ecKa6wPew60xGObI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "759384098193-tdrl536j3nmjh368jlu10u7udd5g0pki.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
