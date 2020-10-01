@@ -1,8 +1,9 @@
-package com.sabya.instagram
+package com.sabya.instagram.activities
 
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import com.sabya.instagram.R
 import kotlinx.android.synthetic.main.activity_profile.*
 
 class ProfileActivity : BaseActivity(4) {

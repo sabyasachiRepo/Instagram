@@ -1,9 +1,11 @@
-package com.sabya.instagram
+package com.sabya.instagram.activities
 
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
+import com.sabya.instagram.R
+import kotlinx.android.synthetic.main.activity_home.*
 
 class HomeActivity : BaseActivity(0) {
 
@@ -26,6 +28,16 @@ class HomeActivity : BaseActivity(0) {
 
              }
          }*/
+
+        sign_out_text.setOnClickListener {
+            mAuth.signOut()
+        }
+        mAuth.addAuthStateListener {
+            if (it.currentUser == null) {
+                startActivity(Intent(this, LoginActivity::class.java))
+                finish()
+            }
+        }
 
     }
 

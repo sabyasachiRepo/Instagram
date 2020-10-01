@@ -1,11 +1,12 @@
-package com.sabya.instagram
+package com.sabya.instagram.activities
 
 import android.os.Bundle
 import android.util.Log
+import com.sabya.instagram.R
 
-class ShareActivity : BaseActivity(2) {
+class LikesActivity : BaseActivity(3) {
 
-    private val TAG = "ShareActivity"
+    private val TAG = "LikesActivity"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
