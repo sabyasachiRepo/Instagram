@@ -2,8 +2,6 @@ package com.sabya.instagram.activities
 
 import android.content.Intent
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
 import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
@@ -13,7 +11,7 @@ import kotlinx.android.synthetic.main.activity_login.*
 import net.yslibrary.android.keyboardvisibilityevent.KeyboardVisibilityEvent
 import net.yslibrary.android.keyboardvisibilityevent.KeyboardVisibilityEventListener
 
-class LoginActivity : AppCompatActivity(), KeyboardVisibilityEventListener, TextWatcher,
+class LoginActivity : AppCompatActivity(), KeyboardVisibilityEventListener,
     View.OnClickListener {
     private val TAG = "HomeActivity"
 
@@ -23,9 +21,7 @@ class LoginActivity : AppCompatActivity(), KeyboardVisibilityEventListener, Text
         setContentView(R.layout.activity_login)
         Log.d(TAG, "onCreate")
         KeyboardVisibilityEvent.registerEventListener(this, this)
-        login_btn.isEnabled = false
-        email_input.addTextChangedListener(this)
-        password_input.addTextChangedListener(this)
+        coordinateBtnAndInputs(login_btn, email_input, password_input)
         login_btn.setOnClickListener(this)
         create_account_text.setOnClickListener(this)
         mAuth = FirebaseAuth.getInstance()
@@ -33,30 +29,15 @@ class LoginActivity : AppCompatActivity(), KeyboardVisibilityEventListener, Text
 
     override fun onVisibilityChanged(isKeyBoardOpen: Boolean) {
         if (isKeyBoardOpen) {
-            scroll_view.scrollTo(0, scroll_view.bottom)
             create_account_text.visibility = View.GONE
         } else {
-            scroll_view.scrollTo(0, scroll_view.top)
             create_account_text.visibility = View.VISIBLE
 
         }
     }
 
-
-    override fun afterTextChanged(s: Editable?) {
-        login_btn.isEnabled = validate(email_input.text.toString(), password_input.text.toString())
-
-    }
-
     private fun validate(email: String, password: String) =
         email.isNotEmpty() && password.isNotEmpty()
-
-    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-
-    }
-
-    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-    }
 
     override fun onClick(view: View) {
         when (view.id) {
