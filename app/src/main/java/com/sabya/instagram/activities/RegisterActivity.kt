@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.google.android.gms.tasks.Task
+import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
@@ -40,17 +41,12 @@ class RegisterActivity : AppCompatActivity(), EmailFragment.Listener, NamePassFr
     override fun onNext(email: String) {
         if (email.isNotEmpty()) {
             mEmail = email
-            mAuth.fetchSignInMethodsForEmail(email).addOnCompleteListener {
-                if (it.isSuccessful) {
-                    if (it.result?.signInMethods?.isEmpty() != false) {
-                        supportFragmentManager.beginTransaction()
-                            .replace(R.id.frame_layout, NamePassFragment())
-                            .addToBackStack(null)
-                            .commit()
-                    } else {
-                        showToast("This email already exists")
-
-                    }
+            mAuth.fetchSignInMethodsForEmail(email) { singiInMethods ->
+                if (singiInMethods.isEmpty()) {
+                    supportFragmentManager.beginTransaction()
+                        .replace(R.id.frame_layout, NamePassFragment())
+                        .addToBackStack(null)
+                        .commit()
                 }
             }
 
@@ -59,27 +55,18 @@ class RegisterActivity : AppCompatActivity(), EmailFragment.Listener, NamePassFr
         }
     }
 
+
     override fun onRegister(fullName: String, password: String) {
         if (fullName.isNotEmpty() && password.isNotEmpty()) {
             val email = mEmail
             if (email != null) {
-                mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener {
-                    if (it.isSuccessful) {
-                        val user = mkUser(fullName, email)
-                        val reference: DatabaseReference? =
-                            it.result?.user?.uid?.let { it ->
-                                mDatabase.child("users").child(it)
-                            }
-                        reference?.setValue(user)?.addOnCompleteListener { task ->
-                            if (task.isSuccessful) {
-                                startHomeActivity()
-                            } else {
-                                unknownRegisterError(task)
-                            }
+                mAuth.createUserWithEmailAndPassword(email, password) {
+                    it?.user?.uid?.let { uid ->
+                        mDatabase.createUser(uid, mkUser(fullName, email)) {
+                            startHomeActivity()
                         }
-                    } else {
-                        unknownRegisterError(it)
                     }
+
                 }
             } else {
                 Log.e(TAG, "onRegister email is null")
@@ -91,6 +78,7 @@ class RegisterActivity : AppCompatActivity(), EmailFragment.Listener, NamePassFr
             showToast("Please enter full name and password")
         }
     }
+
 
     private fun unknownRegisterError(task: Task<*>) {
         Log.d(TAG, "failed to create user profile", task.exception)
@@ -111,6 +99,46 @@ class RegisterActivity : AppCompatActivity(), EmailFragment.Listener, NamePassFr
     }
 
     private fun mkUserName(fullName: String): String = fullName.toLowerCase().replace(" ", ".")
+
+    private fun FirebaseAuth.fetchSignInMethodsForEmail(
+        email: String,
+        onSuccess: (List<String>) -> Unit
+    ) {
+        fetchSignInMethodsForEmail(email).addOnCompleteListener {
+            if (it.isSuccessful) {
+                onSuccess(it.result?.signInMethods ?: emptyList<String>())
+            } else {
+                showToast("This email already exists")
+
+            }
+        }
+    }
+
+    private fun DatabaseReference.createUser(uid: String, user: User, onSuccess: () -> Unit) {
+        val reference: DatabaseReference = mDatabase.child("users").child(uid)
+        reference.setValue(user).addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                onSuccess()
+            } else {
+                unknownRegisterError(task)
+            }
+        }
+
+    }
+
+    private fun FirebaseAuth.createUserWithEmailAndPassword(
+        email: String,
+        password: String,
+        onSuccess: (AuthResult?) -> Unit
+    ) {
+        createUserWithEmailAndPassword(email, password).addOnCompleteListener {
+            if (it.isSuccessful) {
+                onSuccess(it.result)
+            } else {
+                unknownRegisterError(it)
+            }
+        }
+    }
 
 }
 
