@@ -29,6 +29,17 @@
             android:name=".activities.RegisterActivity"
             android:windowSoftInputMode="stateVisible|adjustResize" />
 
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.sabya.instagram.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths"></meta-data>
+        </provider>
     </application>
-
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="true" />
 </manifest>
