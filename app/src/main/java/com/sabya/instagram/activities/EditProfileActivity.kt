@@ -61,7 +61,8 @@ class EditProfileActivity : AppCompatActivity(), PasswordDialog.Listener {
                 website_input.setText(mUser?.website, TextView.BufferType.EDITABLE)
                 bio_input.setText(mUser?.bio, TextView.BufferType.EDITABLE)
                 email_input.setText(mUser?.email, TextView.BufferType.EDITABLE)
-                phone_input.setText(mUser?.phone.toString(), TextView.BufferType.EDITABLE)
+                phone_input.setText(mUser?.phone?.toString(), TextView.BufferType.EDITABLE)
+                profile_image.loadUserPhoto(mUser?.photo)
             })
     }
 
@@ -100,11 +101,12 @@ class EditProfileActivity : AppCompatActivity(), PasswordDialog.Listener {
                 if (task.isSuccessful) {
                     pathReference.downloadUrl.addOnCompleteListener { task ->
                         if (task.isSuccessful) {
-                            val downloadUri = task.result
-                            mDatabase.child("users/$uid/photo").setValue(downloadUri.toString())
+                            val photoUrl = task.result.toString()
+                            mDatabase.child("users/$uid/photo").setValue(photoUrl)
                                 .addOnCompleteListener {
                                     if (it.isSuccessful) {
-                                        Log.d(TAG, "onActivityResult photo saved successfully")
+                                        mUser = mUser?.copy(photo = photoUrl)
+                                        profile_image.loadUserPhoto(mUser?.photo)
                                     } else {
                                         showToast(it.exception!!.message!!)
                                     }
@@ -121,14 +123,7 @@ class EditProfileActivity : AppCompatActivity(), PasswordDialog.Listener {
 
     private fun updateProfile() {
         val phoneString = phone_input.text.toString()
-        mPendingUser = User(
-            name = name_input.text.toString(),
-            username = username_input.text.toString(),
-            website = website_input.text.toString(),
-            bio = bio_input.text.toString(),
-            email = email_input.text.toString(),
-            phone = if (phoneString.isEmpty()) 0 else phoneString.toLong()
-        )
+        mPendingUser = readInputs(phoneString)
 
         val error = validate(mPendingUser)
         if (error == null) {
@@ -140,6 +135,17 @@ class EditProfileActivity : AppCompatActivity(), PasswordDialog.Listener {
         }
 
 
+    }
+
+    private fun readInputs(phoneString: String): User {
+        return User(
+            name = name_input.text.toString(),
+            username = username_input.text.toString(),
+            email = email_input.text.toString(),
+            website = website_input.text.toStringOrNull(),
+            bio = bio_input.text.toStringOrNull(),
+            phone = phone_input.text.toString().toLongOrNull()
+        )
     }
 
     override fun onPasswordConfirm(password: String) {
@@ -157,7 +163,7 @@ class EditProfileActivity : AppCompatActivity(), PasswordDialog.Listener {
 
 
     private fun updateUser(user: User) {
-        val updateMap = mutableMapOf<String, Any>()
+        val updateMap = mutableMapOf<String, Any?>()
         if (user.name != mUser?.name) updateMap["name"] = user.name
         if (user.username != mUser?.username) updateMap["username"] = user.username
         if (user.website != mUser?.website) updateMap["website"] = user.website
@@ -176,7 +182,7 @@ class EditProfileActivity : AppCompatActivity(), PasswordDialog.Listener {
 
     private fun DatabaseReference.updateUser(
         uid: String,
-        updateMap: Map<String, Any>,
+        updateMap: Map<String, Any?>,
         onSuccess: () -> Unit
     ) {
         child("users").child(uid).updateChildren(updateMap)
