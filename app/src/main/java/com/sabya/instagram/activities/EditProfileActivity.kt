@@ -7,7 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.auth.EmailAuthProvider
 import com.sabya.instagram.R
 import com.sabya.instagram.models.User
-import com.sabya.instagram.utils.CameraPictureTaker
+import com.sabya.instagram.utils.CameraHelper
 import com.sabya.instagram.utils.FirebaseHelper
 import com.sabya.instagram.utils.ValueEventListenerAdapter
 import com.sabya.instagram.views.PasswordDialog
@@ -20,20 +20,20 @@ class EditProfileActivity : AppCompatActivity(), PasswordDialog.Listener {
     var mUser: User? = null
     lateinit var mPendingUser: User
     lateinit var mFirebaseHelper: FirebaseHelper
-    lateinit var cameraPictureTaker: CameraPictureTaker
+    lateinit var cameraHelper: CameraHelper
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_edit_profile)
-        cameraPictureTaker = CameraPictureTaker(this)
+        cameraHelper = CameraHelper(this)
         Log.d(TAG, "onCreate")
         close_image.setOnClickListener {
             finish()
         }
 
         save_image.setOnClickListener { updateProfile() }
-        change_photo_text.setOnClickListener { cameraPictureTaker.takeCameraPicture() }
+        change_photo_text.setOnClickListener { cameraHelper.takeCameraPicture() }
 
         mFirebaseHelper = FirebaseHelper(this)
         mFirebaseHelper.currentUserReference()
@@ -52,8 +52,8 @@ class EditProfileActivity : AppCompatActivity(), PasswordDialog.Listener {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == cameraPictureTaker.REQUEST_CODE && resultCode == RESULT_OK) {
-            mFirebaseHelper.uploadUserPhoto(cameraPictureTaker.imageUri!!) { photoUrl ->
+        if (requestCode == cameraHelper.REQUEST_CODE && resultCode == RESULT_OK) {
+            mFirebaseHelper.uploadUserPhoto(cameraHelper.imageUri!!) { photoUrl ->
                 mFirebaseHelper.updateUserPhoto(photoUrl) {
                     mUser = mUser?.copy(photo = photoUrl)
                     profile_image.loadUserPhoto(mUser?.photo)

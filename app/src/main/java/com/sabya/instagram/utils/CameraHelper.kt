@@ -11,7 +11,7 @@ import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
 
-class CameraPictureTaker(val activity: Activity) {
+class CameraHelper(val activity: Activity) {
 
     private val simpleDateFormat = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US)
     var imageUri: Uri? = null
