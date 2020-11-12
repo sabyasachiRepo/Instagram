@@ -12,15 +12,15 @@ import com.sabya.instagram.activities.showToast
 
 class FirebaseHelper(val activity: Activity) {
 
-    private var mAuth: FirebaseAuth = FirebaseAuth.getInstance()
-    private var mDatabase: DatabaseReference = FirebaseDatabase.getInstance().reference
-    private var mStorage: StorageReference = FirebaseStorage.getInstance().reference
+    var auth: FirebaseAuth = FirebaseAuth.getInstance()
+    var database: DatabaseReference = FirebaseDatabase.getInstance().reference
+    var storage: StorageReference = FirebaseStorage.getInstance().reference
 
     fun updateUserPhoto(
         photoUrl: String,
         onSuccess: () -> Unit
     ) {
-        mDatabase.child("users/${mAuth.currentUser!!.uid}/photo").setValue(photoUrl)
+        database.child("users/${auth.currentUser!!.uid}/photo").setValue(photoUrl)
             .addOnCompleteListener {
                 if (it.isSuccessful) {
                     onSuccess()
@@ -36,7 +36,7 @@ class FirebaseHelper(val activity: Activity) {
         updateMap: Map<String, Any?>,
         onSuccess: () -> Unit
     ) {
-        mDatabase.child("users").child(mAuth.currentUser!!.uid).updateChildren(updateMap)
+        database.child("users").child(auth.currentUser!!.uid).updateChildren(updateMap)
             .addOnCompleteListener {
                 if (it.isSuccessful) {
                     onSuccess()
@@ -50,9 +50,8 @@ class FirebaseHelper(val activity: Activity) {
         photo: Uri,
         onSuccess: (String) -> Unit
     ) {
-        val pathReference = mStorage.child("users/${mAuth.currentUser!!.uid}/photo")
-        val uploadTask = mStorage.child("users/${mAuth.currentUser!!.uid}/photo").putFile(photo)
-        val urlTask = uploadTask.addOnCompleteListener { task ->
+        val pathReference = storage.child("users/${auth.currentUser!!.uid}/photo")
+        pathReference.putFile(photo).addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 pathReference.downloadUrl.addOnCompleteListener { taskUri ->
                     if (taskUri.isSuccessful) {
@@ -68,7 +67,7 @@ class FirebaseHelper(val activity: Activity) {
     }
 
     fun updateEmail(email: String, onSuccess: () -> Unit) {
-        mAuth.currentUser!!.updateEmail(email).addOnCompleteListener {
+        auth.currentUser!!.updateEmail(email).addOnCompleteListener {
             if (it.isSuccessful) {
                 onSuccess()
             } else {
@@ -78,7 +77,7 @@ class FirebaseHelper(val activity: Activity) {
     }
 
     fun reauthenticate(credential: AuthCredential, onSuccess: () -> Unit) {
-        mAuth.currentUser!!.reauthenticate(credential).addOnCompleteListener {
+        auth.currentUser!!.reauthenticate(credential).addOnCompleteListener {
             if (it.isSuccessful) {
                 onSuccess()
             } else {
@@ -88,5 +87,5 @@ class FirebaseHelper(val activity: Activity) {
     }
 
     fun currentUserReference(): DatabaseReference =
-        mDatabase.child("users").child(mAuth.currentUser!!.uid)
+        database.child("users").child(auth.currentUser!!.uid)
 }
