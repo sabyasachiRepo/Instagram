@@ -3,14 +3,15 @@ package com.sabya.instagram.activities
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import com.google.firebase.auth.FirebaseAuth
 import com.sabya.instagram.R
+import com.sabya.instagram.utils.FirebaseHelper
+import com.sabya.instagram.utils.ValueEventListenerAdapter
 import kotlinx.android.synthetic.main.activity_home.*
 
 class HomeActivity : BaseActivity(0) {
 
     private val TAG = "HomeActivity"
-    private lateinit var mAuth: FirebaseAuth
+    private lateinit var mFirebase: FirebaseHelper
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -18,32 +19,29 @@ class HomeActivity : BaseActivity(0) {
         setUpBottomNavigation()
         Log.d(TAG, "onCreate")
 
-        mAuth = FirebaseAuth.getInstance()
-        /* auth.signInWithEmailAndPassword("alex@alexbezhan.com", "password").addOnCompleteListener {
-             if (it.isSuccessful) {
-                 Log.d(TAG, "singIn: Success")
-
-             } else {
-                 Log.d(TAG, "singIn: failure", it.exception)
-
-             }
-         }*/
+        mFirebase = FirebaseHelper(this)
 
         sign_out_text.setOnClickListener {
-            mAuth.signOut()
+            mFirebase.auth.signOut()
         }
-        mAuth.addAuthStateListener {
+        mFirebase.auth.addAuthStateListener {
             if (it.currentUser == null) {
                 startActivity(Intent(this, LoginActivity::class.java))
                 finish()
             }
         }
 
+        mFirebase.database.child("feed-post").child(mFirebase.auth.currentUser!!.uid)
+            .addValueEventListener(ValueEventListenerAdapter {
+                val posts = it.children.map { it.getValue(FeedPost::class.java) }
+                Log.d(TAG, "feedPosts: ${posts.first()!!.timeStampDate()})")
+            })
+
     }
 
     override fun onStart() {
         super.onStart()
-        if (mAuth.currentUser == null) {
+        if (mFirebase.auth.currentUser == null) {
             startActivity(Intent(this, LoginActivity::class.java))
             finish()
         }
