@@ -34,7 +34,17 @@ class ProfileActivity : BaseActivity(4) {
             startActivity(intent)
         }
 
+        settings_image.setOnClickListener {
+            val intent = Intent(this, ProfileSettingsActivity::class.java)
+            startActivity(intent)
 
+        }
+
+        add_friends_image.setOnClickListener {
+            val intent = Intent(this, AddFriendsActivity::class.java)
+            startActivity(intent)
+
+        }
         mFirebase = FirebaseHelper(this)
         mFirebase.currentUserReference().addValueEventListener(ValueEventListenerAdapter {
             mUser = it.getValue(User::class.java)!!

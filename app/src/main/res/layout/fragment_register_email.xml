@@ -16,7 +16,7 @@
 
     <EditText
         android:id="@+id/email_input"
-        style="@style/login_input"
+        style="@style/big_input"
         android:hint="Email"
         android:inputType="textEmailAddress"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -24,7 +24,7 @@
 
     <Button
         android:id="@+id/next_btn"
-        style="@style/login_btn"
+        style="@style/big_btn"
         android:text="Next"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/email_input" />
