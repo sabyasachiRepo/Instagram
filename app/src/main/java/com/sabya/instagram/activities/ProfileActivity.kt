@@ -13,7 +13,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.sabya.instagram.R
 import com.sabya.instagram.models.User
 import com.sabya.instagram.utils.FirebaseHelper
-import com.sabya.instagram.utils.GlideApp
 import com.sabya.instagram.utils.ValueEventListenerAdapter
 import kotlinx.android.synthetic.main.activity_profile.*
 
@@ -77,9 +76,6 @@ class ImageAdapter(private val images: List<String>) :
         holder.image.loadImage(images[position])
     }
 
-    private fun ImageView.loadImage(image: String) {
-        GlideApp.with(this).load(image).centerCrop().into(this)
-    }
 
     override fun getItemCount(): Int = images.size
 

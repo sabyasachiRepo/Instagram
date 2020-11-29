@@ -15,13 +15,11 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.sabya.instagram.R
 import com.sabya.instagram.utils.FirebaseHelper
-import com.sabya.instagram.utils.GlideApp
 import com.sabya.instagram.utils.ValueEventListenerAdapter
 import kotlinx.android.synthetic.main.activity_home.*
 import kotlinx.android.synthetic.main.feed_item.view.*
@@ -85,7 +83,7 @@ class FeedAdapter(private val posts: List<FeedPost>) :
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val post = posts[position]
         with(holder) {
-            view.user_photo_image.loadImage(post.photo)
+            view.user_photo_image.loadImage(post.photo!!)
             view.post_image.loadImage(post.image)
             view.username_text.text = post.userName
             if (post.likesCount == 0) {
@@ -122,8 +120,5 @@ class FeedAdapter(private val posts: List<FeedPost>) :
 
     override fun getItemCount() = posts.size
 
-    private fun ImageView.loadImage(image: String?) {
-        GlideApp.with(this).load(image).centerCrop().into(this)
-    }
 
 }
