@@ -7,9 +7,12 @@ import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.gms.tasks.Tasks
+import com.google.firebase.database.DatabaseReference
 import com.sabya.instagram.R
 import com.sabya.instagram.models.User
 import com.sabya.instagram.utils.FirebaseHelper
+import com.sabya.instagram.utils.TaskSourceOnCompleteListener
 import com.sabya.instagram.utils.ValueEventListenerAdapter
 import kotlinx.android.synthetic.main.activity_add_friends.*
 import kotlinx.android.synthetic.main.add_friends_item.view.*
@@ -25,16 +28,18 @@ class AddFriendsActivity : AppCompatActivity(), FriendsAdapter.Listener {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add_friends)
 
+
         mFirebase = FirebaseHelper(this)
         mAdapter = FriendsAdapter(this)
 
         val uid = mFirebase.auth.currentUser!!.uid
 
+        back_image.setOnClickListener { finish() }
         add_friends_recycler.adapter = mAdapter
         add_friends_recycler.layoutManager = LinearLayoutManager(this)
 
         mFirebase.database.child("users").addValueEventListener(ValueEventListenerAdapter {
-            val allUser = it.children.map { it.getValue(User::class.java)!!.copy(uid = it.key) }
+            val allUser = it.children.map { it.asUser()!! }
             val (userList, otherUsersList) = allUser.partition { it.uid == uid }
             mUser = userList.first()
             mUsers = otherUsersList
@@ -56,14 +61,34 @@ class AddFriendsActivity : AppCompatActivity(), FriendsAdapter.Listener {
     }
 
     private fun setFollow(uid: String, follow: Boolean, onSuccess: () -> Unit) {
-        val followTask =
-            mFirebase.database.child("users").child(mUser.uid!!).child("follows").child(uid)
-        val setFollow = if (follow) followTask.setValue(true) else followTask.removeValue()
-        val followersTask =
-            mFirebase.database.child("users").child(uid).child("followers").child(mUser.uid!!)
 
-        val setFollower = if (follow) followersTask.setValue(true) else followersTask.removeValue()
-        setFollow.continueWithTask({ setFollower }).addOnCompleteListener {
+        fun DatabaseReference.setValueTrueOrRemove(value: Boolean) =
+            if (value) setValue(true) else removeValue()
+
+
+        val followsTask =
+            mFirebase.database.child("users").child(mUser.uid!!).child("followsTask").child(uid)
+                .setValueTrueOrRemove(follow)
+
+        val followersTask =
+            mFirebase.database.child("users").child(uid).child("followersTask").child(
+                mUser.uid!!
+            ).setValueTrueOrRemove(follow)
+
+        val feedPostsTask = task<Void> { taskSource ->
+            mFirebase.database.child("feed-posts").child(uid)
+                .addListenerForSingleValueEvent(ValueEventListenerAdapter {
+                    val postsMap = if (follow) {
+                        it.children.map { it.key to it.value }.toMap()
+                    } else {
+                        it.children.map { it.key to null }.toMap()
+                    }
+                    mFirebase.database.child("feed-posts").child(mUser.uid!!)
+                        .updateChildren(postsMap)
+                        .addOnCompleteListener(TaskSourceOnCompleteListener(taskSource))
+                })
+        }
+        Tasks.whenAll(followsTask, followersTask, feedPostsTask).addOnCompleteListener {
             if (it.isSuccessful) {
                 onSuccess()
             } else {
@@ -96,7 +121,7 @@ class FriendsAdapter(private val listener: Listener) :
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         with(holder) {
             val user = mUsers[position]
-            view.photo_image.loadImage(user.photo!!)
+            view.photo_image.loadUserPhoto(user.photo!!)
             view.username_text.text = user.username
             view.name_text.text = user.name
             val follows = mFollows[user.uid] ?: false

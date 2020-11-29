@@ -4,11 +4,16 @@ import android.app.Activity
 import android.content.Context
 import android.text.Editable
 import android.text.TextWatcher
+import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.Toast
+import com.google.android.gms.tasks.Task
+import com.google.android.gms.tasks.TaskCompletionSource
+import com.google.firebase.database.DataSnapshot
 import com.sabya.instagram.R
+import com.sabya.instagram.models.User
 import com.sabya.instagram.utils.GlideApp
 
 
@@ -37,10 +42,11 @@ fun coordinateBtnAndInputs(btn: Button, vararg inputs: EditText) {
 }
 
 fun ImageView.loadUserPhoto(photoUrl: String?) {
-    if (!(context as Activity).isDestroyed) {
+    ifNotDestroyed {
         GlideApp.with(this).load(photoUrl).fallback(R.drawable.person).into(this)
     }
 }
+
 
 fun Editable.toStringOrNull(): String? {
     val str = toString()
@@ -48,5 +54,22 @@ fun Editable.toStringOrNull(): String? {
 }
 
 fun ImageView.loadImage(image: String) {
-    GlideApp.with(this).load(image).centerCrop().into(this)
+    ifNotDestroyed {
+        GlideApp.with(this).load(image).centerCrop().into(this)
+
+    }
 }
+
+private fun View.ifNotDestroyed(block: () -> Unit) {
+    if (!(context as Activity).isDestroyed) {
+        block()
+    }
+}
+
+fun <T> task(block: (TaskCompletionSource<T>) -> Unit): Task<T> {
+    val taskSource = TaskCompletionSource<T>()
+    block(taskSource)
+    return taskSource.task
+}
+
+fun DataSnapshot.asUser(): User? = getValue(User::class.java)?.copy(uid = key)

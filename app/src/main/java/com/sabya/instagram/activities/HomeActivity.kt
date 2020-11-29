@@ -58,6 +58,7 @@ class HomeActivity : BaseActivity(0) {
             mFirebase.database.child("feed-post").child(currentUser.uid)
                 .addValueEventListener(ValueEventListenerAdapter {
                     val posts = it.children.map { it.getValue(FeedPost::class.java)!! }
+                        .sortedByDescending { it.timeStampDate() }
                     //  Log.d(TAG, "feedPosts: ${posts.first().timeStampDate()})")
                     feed_recycler.adapter = FeedAdapter(posts)
                     feed_recycler.layoutManager = LinearLayoutManager(this)
@@ -83,7 +84,7 @@ class FeedAdapter(private val posts: List<FeedPost>) :
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val post = posts[position]
         with(holder) {
-            view.user_photo_image.loadImage(post.photo!!)
+            view.user_photo_image.loadUserPhoto(post.photo!!)
             view.post_image.loadImage(post.image)
             view.username_text.text = post.userName
             if (post.likesCount == 0) {
