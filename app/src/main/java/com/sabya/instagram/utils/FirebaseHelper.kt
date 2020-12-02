@@ -20,7 +20,7 @@ class FirebaseHelper(val activity: Activity) {
         photoUrl: String,
         onSuccess: () -> Unit
     ) {
-        database.child("users/${auth.currentUser!!.uid}/photo").setValue(photoUrl)
+        database.child("users/${currentUid()!!}/photo").setValue(photoUrl)
             .addOnCompleteListener {
                 if (it.isSuccessful) {
                     onSuccess()
@@ -36,7 +36,7 @@ class FirebaseHelper(val activity: Activity) {
         updateMap: Map<String, Any?>,
         onSuccess: () -> Unit
     ) {
-        database.child("users").child(auth.currentUser!!.uid).updateChildren(updateMap)
+        database.child("users").child(currentUid()!!).updateChildren(updateMap)
             .addOnCompleteListener {
                 if (it.isSuccessful) {
                     onSuccess()
@@ -50,7 +50,7 @@ class FirebaseHelper(val activity: Activity) {
         photo: Uri,
         onSuccess: (String) -> Unit
     ) {
-        val pathReference = storage.child("users/${auth.currentUser!!.uid}/photo")
+        val pathReference = storage.child("users/${currentUid()!!}/photo")
         pathReference.putFile(photo).addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 pathReference.downloadUrl.addOnCompleteListener { taskUri ->
@@ -87,5 +87,7 @@ class FirebaseHelper(val activity: Activity) {
     }
 
     fun currentUserReference(): DatabaseReference =
-        database.child("users").child(auth.currentUser!!.uid)
+        database.child("users").child(currentUid()!!)
+
+    fun currentUid(): String? = auth.currentUser?.uid
 }
